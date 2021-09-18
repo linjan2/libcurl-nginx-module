@@ -339,7 +339,7 @@ check_multi_info(ngx_http_api_main_conf_t *main_conf)
                 // char *effective_url;
                 // curl_easy_getinfo(easy_handle, CURLINFO_EFFECTIVE_URL, &effective_url);
 
-                // remove request's socket event handlers when curl doesn't issue CURL_POLL_REMOVE when transport is done
+                // remove request's socket event handlers if curl doesn't issue CURL_POLL_REMOVE when transport is done
                 for (api_curl_socket_t *sock = api_request->curl_sockets; sock; sock = sock->next)
                 {
                     ngx_log_error(NGX_LOG_ERR, api_request->r->connection->log, 0, "api: non-removed sockets on CURLMSG_DONE");
@@ -388,10 +388,6 @@ check_multi_info(ngx_http_api_main_conf_t *main_conf)
         }
     }
     ngx_log_error(NGX_LOG_NOTICE, main_conf->log, 0, "%s L:%d, pending=%d", __FUNCTION__, __LINE__, pending);
-    if (pending == 0 && main_conf->timer.timer_set)
-    {
-        ngx_del_timer(&main_conf->timer);
-    }
 }
 
 static void
@@ -578,10 +574,6 @@ socketfunction(CURL *easy_handle, curl_socket_t s, int what, void *userp, void *
         if (ret != NGX_OK)
         {
             ngx_log_error(NGX_LOG_ERR, api_request->r->connection->log, 0, "api: %s, %s", __FUNCTION__, "ngx_handle_write_event/ngx_handle_read_event");
-            // curl_easy_cleanup(easy_handle);
-            // curl_multi_remove_handle(main_conf->curlm, easy_handle);
-            // ngx_http_finalize_request(api_request->r, NGX_HTTP_INTERNAL_SERVER_ERROR);
-                // finalize request in check_multi_info
             return !CURLM_OK; // handle error on CURLMSG_DONE
         }
     }
@@ -595,10 +587,15 @@ static int
 timerfunction(CURLM *multi, long timeout_ms, void *userp)
 {   // curl wants to create/clear a timer
     ngx_http_api_main_conf_t *main_conf = userp;
-    ngx_log_error(NGX_LOG_NOTICE, main_conf->log, 0, "%s", __FUNCTION__);
+    ngx_log_error(NGX_LOG_NOTICE, main_conf->log, 0, "%s, timeout_ms %l", __FUNCTION__, timeout_ms);
+
     if (timeout_ms >= 0)
     {
         ngx_add_timer(&main_conf->timer, timeout_ms);
+    }
+    else if (main_conf->timer.timer_set)
+    {
+        ngx_del_timer(&main_conf->timer);
     }
     return 0;
 }
