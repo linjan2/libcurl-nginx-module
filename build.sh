@@ -48,12 +48,6 @@ function ngx
   make
 }
 
-function helper
-{
-  plugin/build_helper.sh
-  cp plugin/bin/* ${BIN}/lib
-}
-
 function run
 {
   ${BIN}/nginx -g "daemon off;"
@@ -66,7 +60,6 @@ function hup
 
 if [ $# -eq 0 ]
 then
-  helper
   configure
   ngx
 else
