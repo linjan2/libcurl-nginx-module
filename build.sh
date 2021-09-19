@@ -9,7 +9,7 @@ mkdir -p ${BIN}/{tmp,lib} || :
 
 function configure
 {
-  cd nginx-1.18.0 && \
+  pushd nginx-1.18.0 > /dev/null
   ./configure \
     --add-module=../plugin \
     --build=custom-build \
@@ -35,14 +35,16 @@ function configure
     --with-http_ssl_module \
     --with-http_v2_module \
     --with-http_stub_status_module \
-    --without-http_rewrite_module \
     --without-http_gzip_module
+    # --without-http_rewrite_module
     # --with-http_gzip_static_module
   cp -r ./conf ${BIN}
   cp -r ./html ${BIN}
+  popd > /dev/null
+  cp nginx.conf ${BIN}/conf
 }
 
-function ngx
+function build
 {
   pushd "$(dirname $(readlink -f ${0}))/nginx-1.18.0" > /dev/null
   make
