@@ -22,12 +22,14 @@ sudo dnf install libcurl-devel
 ./build.sh configure
 ./build.sh build
 ./build.sh run
+
+curl -i http://localhost:8888/api/
 ```
 
 Example location configuration in Nginx.conf:
 
 ```
-location /api {
+location /api/ {
     api_enable;
 }
 ```
