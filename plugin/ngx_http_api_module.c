@@ -891,6 +891,24 @@ process_request_parameters(ngx_http_request_t *r, ngx_http_api_ctx_t *api_reques
         ngx_log_error(NGX_LOG_NOTICE, r->connection->log, 0, "api: content-length = '%O'", r->headers_in.content_length_n);
     }
 
+    // collect all headers
+    ngx_list_part_t *part = &r->headers_in.headers.part;
+    ngx_uint_t number_of_headers = 0;
+    while (part != NULL)
+    {
+        number_of_headers += part->nelts;
+        ngx_table_elt_t *headers = part->elts;
+        for (ngx_uint_t i = 0; i < number_of_headers; i += 1)
+        {
+            ngx_table_elt_t *header = &headers[i];
+            ngx_str_t *key = &header->key;
+            ngx_str_t *value = &header->value;
+
+            ngx_log_error(NGX_LOG_NOTICE, r->connection->log, 0, "header: %V = %V", key, value);
+        }
+        part = part->next;
+    }
+
     return NGX_OK;
 }
 

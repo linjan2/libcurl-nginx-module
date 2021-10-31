@@ -35,9 +35,9 @@ function configure
     --with-http_ssl_module \
     --with-http_v2_module \
     --with-http_stub_status_module \
-    --without-http_gzip_module
+    --with-http_gzip_static_module
+    # --without-http_gzip_module
     # --without-http_rewrite_module
-    # --with-http_gzip_static_module
   cp -r ./conf ${BIN}
   cp -r ./html ${BIN}
   popd > /dev/null
@@ -46,8 +46,8 @@ function configure
 
 function build
 {
-  pushd "$(dirname $(readlink -f ${0}))/nginx-1.18.0" > /dev/null
-  make
+  pushd nginx-1.18.0 > /dev/null
+  make build
 }
 
 function run
@@ -57,13 +57,12 @@ function run
 
 function hup
 {
-  kill -s HUP $(cat ${BIN}//nginx.pid)
+  kill -s HUP $(cat ${BIN}/nginx.pid)
 }
 
 if [ $# -eq 0 ]
 then
-  configure
-  ngx
+  build
 else
   "$@"
 fi
